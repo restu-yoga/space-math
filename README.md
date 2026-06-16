@@ -192,14 +192,6 @@ git remote add origin https://github.com/restu-yoga/space-math.git
 git push -u origin main
 ```
 
-Ganti `USERNAME` dengan username GitHub kamu.
-
-Contoh:
-
-```bash
-git remote add origin https://github.com/restu-yoga/space-math.git
-```
-
 ## Developer
 
 Muh Restu Yoga Pratama
