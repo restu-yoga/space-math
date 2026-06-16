@@ -69,7 +69,6 @@ Beberapa script utama yang digunakan dalam project ini:
 | QuestionGenerator | Membuat soal matematika secara otomatis |
 | QuestionUIController | Menampilkan soal ke UI |
 | TimeCounter | Mengatur timer permainan |
-| Obstacle | Mengatur objek penghalang atau musuh yang dapat mengurangi nyawa |
 
 ## Range Soal Matematika
 
@@ -208,4 +207,3 @@ Muh Restu Yoga Pratama
 ## Tujuan Project
 
 Project ini dibuat sebagai media pembelajaran matematika dasar berbasis game. Dengan konsep shooter luar angkasa, pemain dapat belajar berhitung sambil bermain sehingga proses belajar menjadi lebih menarik.
-EOF
