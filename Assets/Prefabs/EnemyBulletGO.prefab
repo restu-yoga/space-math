@@ -99,7 +99,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f41bf761a9437534d9b5e2acf435d44e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 3
+  speed: 1.65
   rotateSpeed: 200
   lifeTime: 5
   homingDuration: 1.5

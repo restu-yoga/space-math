@@ -12,10 +12,13 @@ public class GameManager : MonoBehaviour
     public GameObject TimeCounterGO;
     public GameObject GameTitleGO;
 
-    
-    // Pastikan kedua ini sudah diisi di Inspector!
+    // Untuk menyembunyikan/menampilkan joystick tanpa SetActive(false)
+    public CanvasGroup joystickCanvasGroup;
+
+    // Pastikan kedua ini sudah diisi di Inspector
     public GameObject QuestionGeneratorGO;
     public GameObject questionUIControllerGO;
+    public GameObject ShootButton;
 
     public enum GameManagerState
     {
@@ -23,12 +26,23 @@ public class GameManager : MonoBehaviour
         Gameplay,
         GameOver,
     }
+
     GameManagerState GMState;
 
     void Start()
     {
         GMState = GameManagerState.Opening;
         UpdateGameManagerState();
+    }
+
+    void SetJoystickVisible(bool visible)
+    {
+        if (joystickCanvasGroup != null)
+        {
+            joystickCanvasGroup.alpha = visible ? 1f : 0f;
+            joystickCanvasGroup.interactable = visible;
+            joystickCanvasGroup.blocksRaycasts = visible;
+        }
     }
 
     void UpdateGameManagerState()
@@ -39,13 +53,18 @@ public class GameManager : MonoBehaviour
                 GameOverGO.SetActive(false);
                 playButton.SetActive(true);
                 GameTitleGO.SetActive(true);
-                
+
+                // Joystick disembunyikan saat awal game
+                SetJoystickVisible(false);
+
                 // Matikan spawner saat opening
                 enemySpawner.GetComponent<EnemySpawner>().UnscheduleEnemySpawner();
                 enemySpawner.GetComponent<EnemySpawner>().ClearAllEnemies();
-                
-                if(questionUIControllerGO != null)
+
+                if (questionUIControllerGO != null)
+                {
                     questionUIControllerGO.GetComponent<QuestionUIController>().HideQuestion();
+                }
 
                 break;
 
@@ -53,49 +72,65 @@ public class GameManager : MonoBehaviour
                 scoreUITextGO.GetComponent<GameScore>().Score = 0;
                 playButton.SetActive(false);
                 GameTitleGO.SetActive(false);
+                ShootButton.SetActive(true);
 
+                // Joystick muncul saat game dimulai
+                SetJoystickVisible(true);
 
                 playerShip.GetComponent<PlayerControl>().Init();
                 TimeCounterGO.GetComponent<TimeCounter>().StartTimeCounter();
 
-
-                // --- BAGIAN PERBAIKAN PENTING ---
                 if (QuestionGeneratorGO != null)
                 {
-                    // 1. Ambil script dari objek yang ditunjuk di Inspector (BUKAN FindObjectOfType)
                     var qg = QuestionGeneratorGO.GetComponent<QuestionGenerator>();
-                    
-                    // 2. Ambil Soal & Jawaban dari sumber yang SAMA
-                    string teksSoal = qg.currentQuestion;
-                    int jawabanBenar = qg.currentAnswer;
 
-                    // DEBUG: Cek Console Unity jika angka masih salah
-                    Debug.Log($"[GameManager] Soal: '{teksSoal}' || Jawaban Seharusnya: {jawabanBenar}");
+                    if (qg != null)
+                    {
+                        string teksSoal = qg.currentQuestion;
+                        int jawabanBenar = qg.currentAnswer;
 
-                    // 3. Tampilkan Soal
-                    if(questionUIControllerGO != null)
-                        questionUIControllerGO.GetComponent<QuestionUIController>().ShowQuestion(teksSoal);
-                    
-                    // 4. Spawn Musuh (Matikan scheduler random dulu agar tidak bentrok)
-                    var spawner = enemySpawner.GetComponent<EnemySpawner>();
-                    spawner.UnscheduleEnemySpawner(); // Stop spawn random
-                    spawner.SpawnEnemiesForQuestion(jawabanBenar); // Spawn jawaban
+                        Debug.Log($"[GameManager] Soal: '{teksSoal}' || Jawaban Seharusnya: {jawabanBenar}");
+
+                        if (questionUIControllerGO != null)
+                        {
+                            questionUIControllerGO.GetComponent<QuestionUIController>().ShowQuestion(teksSoal);
+                        }
+
+                        var spawner = enemySpawner.GetComponent<EnemySpawner>();
+
+                        if (spawner != null)
+                        {
+                            spawner.UnscheduleEnemySpawner();
+                            spawner.SpawnEnemiesForQuestion(jawabanBenar);
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError("ERROR: Object QuestionGeneratorGO tidak memiliki script QuestionGenerator!");
+                    }
                 }
                 else
                 {
                     Debug.LogError("ERROR FATAL: Slot 'Question Generator GO' di GameManager Inspector masih KOSONG!");
                 }
-                // --------------------------------
+
                 break;
 
             case GameManagerState.GameOver:
                 TimeCounterGO.GetComponent<TimeCounter>().StopTimeCounter();
                 GameOverGO.SetActive(true);
+                SetJoystickVisible(false);
+                ShootButton.SetActive(false);
+
                 enemySpawner.GetComponent<EnemySpawner>().UnscheduleEnemySpawner();
+
                 Invoke("ChangeToOpeningState", 5f);
-                
-                if(questionUIControllerGO != null)
+
+                if (questionUIControllerGO != null)
+                {
                     questionUIControllerGO.GetComponent<QuestionUIController>().HideQuestion();
+                }
+
                 break;
         }
     }
@@ -121,20 +156,24 @@ public class GameManager : MonoBehaviour
     public void CorrectHit()
     {
         if (scoreUITextGO != null)
+        {
             scoreUITextGO.GetComponent<GameScore>().Score += 100;
+        }
 
         // Generate soal baru
         if (QuestionGeneratorGO != null)
         {
             var qg = QuestionGeneratorGO.GetComponent<QuestionGenerator>();
             var sp = enemySpawner.GetComponent<EnemySpawner>();
-            
-            qg.NewQuestion(); // Bikin soal baru
-            
-            // Log untuk debug
-            Debug.Log($"[CorrectHit] Soal Baru: {qg.currentQuestion} | Jawaban: {qg.currentAnswer}");
-            
-            sp.SpawnEnemiesForQuestion(qg.currentAnswer); // Spawn musuh baru
+
+            if (qg != null && sp != null)
+            {
+                qg.NewQuestion();
+
+                Debug.Log($"[CorrectHit] Soal Baru: {qg.currentQuestion} | Jawaban: {qg.currentAnswer}");
+
+                sp.SpawnEnemiesForQuestion(qg.currentAnswer);
+            }
         }
     }
 
@@ -144,18 +183,18 @@ public class GameManager : MonoBehaviour
         if (playerShip != null)
         {
             var pc = playerShip.GetComponent<PlayerControl>();
-            if (pc != null) pc.TakeDamage();
+
+            if (pc != null)
+            {
+                pc.TakeDamage();
+            }
         }
     }
 
-   public void OnAllEnemiesCleared()
+    public void OnAllEnemiesCleared()
     {
         Debug.Log("Waktu habis! Musuh sudah lewat semua.");
 
-        // OPSI A: HUKUMAN (Pemain kehilangan nyawa karena telat jawab)
-        // WrongHit(); // <--- Uncomment baris ini jika ingin mengurangi nyawa pemain
-
-        // OPSI B: REFESH (Langsung kasih soal baru biar game lanjut)
         if (QuestionGeneratorGO != null && enemySpawner != null)
         {
             var qg = QuestionGeneratorGO.GetComponent<QuestionGenerator>();
@@ -163,10 +202,7 @@ public class GameManager : MonoBehaviour
 
             if (qg != null && sp != null)
             {
-                // Buat soal baru
-                qg.NewQuestion(); 
-                
-                // Munculkan musuh baru
+                qg.NewQuestion();
                 sp.SpawnEnemiesForQuestion(qg.currentAnswer);
             }
         }

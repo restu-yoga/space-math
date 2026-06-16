@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Terresquall;
 
 
 public class PlayerControl : MonoBehaviour
@@ -55,18 +56,24 @@ public class PlayerControl : MonoBehaviour
     // pergerakan player
     void Update()
     {
-        if(Input.GetKeyDown("space"))
-        {
-            GetComponent<AudioSource>().Play();
-            GameObject bullet01 = (GameObject)Instantiate (PlayerBulletGO);
-            bullet01.transform.position = bulletPosition01.transform.position;
+        // if(Input.GetKeyDown("space"))
+        // {
+        //     GetComponent<AudioSource>().Play();
+        //     GameObject bullet01 = (GameObject)Instantiate (PlayerBulletGO);
+        //     bullet01.transform.position = bulletPosition01.transform.position;
 
-            GameObject bullet02 = (GameObject)Instantiate (PlayerBulletGO);
-            bullet02.transform.position = bulletPosition02.transform.position;
-        }
+        //     GameObject bullet02 = (GameObject)Instantiate (PlayerBulletGO);
+        //     bullet02.transform.position = bulletPosition02.transform.position;
+        // }
 
-        float x = Input.GetAxisRaw("Horizontal");
-        float y = Input.GetAxisRaw("Vertical");
+
+        // Input Joystick
+        float x = VirtualJoystick.GetAxisRaw("Horizontal");
+        float y = VirtualJoystick.GetAxisRaw("Vertical");
+
+        // Input Keyboard
+        // float x = Input.GetAxisRaw("Horizontal"); 
+        // float y = Input.GetAxisRaw("Vertical");
 
         Vector2 direction = new Vector2(x, y).normalized;
 
@@ -92,6 +99,17 @@ public class PlayerControl : MonoBehaviour
         pos.y = Mathf.Clamp(pos.y, min.y, max.y);
 
         transform.position = pos;
+    }
+
+    //shoot button
+    public void Shoot()
+    {
+        GetComponent<AudioSource>().Play();
+        GameObject bullet01 = (GameObject)Instantiate (PlayerBulletGO);
+        bullet01.transform.position = bulletPosition01.transform.position;
+
+        GameObject bullet02 = (GameObject)Instantiate (PlayerBulletGO);
+        bullet02.transform.position = bulletPosition02.transform.position;
     }
 
     // player menabrak enemy

@@ -125,7 +125,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   value: 0
   numberText: {fileID: 3340263120665736302}
-  speed: 1
+  speed: 0.65
   waveFrequency: 1
   waveMagnitude: 1.5
   gunPoint: {fileID: 2841857527784143245}
